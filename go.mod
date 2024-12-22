@@ -1,4 +1,4 @@
-module steam-top
+module top-games-api
 
 go 1.23.4
 

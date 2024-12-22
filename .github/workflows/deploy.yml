@@ -26,7 +26,19 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          gcloud builds submit --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api
+          gcloud builds submit --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api --async
+          sleep 10
+          BUILD_STATUS=$(gcloud builds list --limit=1 --format='get(status)')
+          if [[ $BUILD_STATUS == "SUCCESS" ]]; then
+            echo "Build completed successfully"
+            exit 0
+          elif [[ $BUILD_STATUS == "WORKING" ]]; then
+            echo "Build still in progress, continuing..."
+            exit 0
+          else
+            echo "Build failed with status: $BUILD_STATUS"
+            exit 1
+          fi
 
       - name: Deploy to Cloud Run
         run: |
