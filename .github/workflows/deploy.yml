@@ -26,8 +26,21 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_TAG=$(git rev-parse --short HEAD)
-          gcloud builds submit --suppress-logs --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG
+          gcloud builds submit --quiet --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG || exit 1
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Wait for image to be available
+        run: |
+          for i in {1..30}; do
+            if gcloud container images describe gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG >/dev/null 2>&1; then
+              echo "Image found!"
+              exit 0
+            fi
+            echo "Waiting for image... attempt $i"
+            sleep 10
+          done
+          echo "Image not found after timeout"
+          exit 1
 
       - name: Deploy to Cloud Run
         run: |
@@ -36,4 +49,5 @@ jobs:
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
-            --set-env-vars STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}
+            --port 8080 \
+            --set-env-vars "PORT=8080,STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}"

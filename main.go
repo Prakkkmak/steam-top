@@ -19,6 +19,11 @@ func init() {
 	}
 }
 
+func healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 type MostPlayedResponse struct {
 	Response struct {
 		Ranks []struct {
@@ -135,12 +140,18 @@ func main() {
 	if port == "" {
 		log.Println("Variable PORT manquante, utilisation du port 8080 par défaut.")
 		port = "8080"
-	} else {
-		log.Printf("Variable PORT détectée : %s", port)
 	}
+
+	// Ajouter le health check
+	http.HandleFunc("/health", healthCheck)
 	http.HandleFunc("/top5", getTopGamesRealTime)
+
 	log.Printf("Serveur démarré sur le port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	server := &http.Server{
+		Addr: ":" + port,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Erreur au démarrage du serveur : %v", err)
 	}
 }
