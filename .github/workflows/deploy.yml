@@ -50,4 +50,4 @@ jobs:
             --region us-central1 \
             --allow-unauthenticated \
             --port 8080 \
-            --set-env-vars "PORT=8080,STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}"
+            --set-env-vars "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}"
