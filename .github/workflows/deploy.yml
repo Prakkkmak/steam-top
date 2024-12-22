@@ -22,28 +22,17 @@ jobs:
         run: |
           gcloud config set project ${{ vars.GCP_PROJECT_ID }}
           gcloud config set run/region us-central1
-          gcloud config set artifacts/location us-central1
 
       - name: Build and push Docker image
         run: |
-          gcloud builds submit --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api --async
-          sleep 10
-          BUILD_STATUS=$(gcloud builds list --limit=1 --format='get(status)')
-          if [[ $BUILD_STATUS == "SUCCESS" ]]; then
-            echo "Build completed successfully"
-            exit 0
-          elif [[ $BUILD_STATUS == "WORKING" ]]; then
-            echo "Build still in progress, continuing..."
-            exit 0
-          else
-            echo "Build failed with status: $BUILD_STATUS"
-            exit 1
-          fi
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          gcloud builds submit --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy top-games-api \
-            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api \
+            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG \
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
