@@ -1,0 +1,38 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure gcloud CLI
+        run: |
+          gcloud config set project ${{ vars.GCP_PROJECT_ID }}
+          gcloud config set run/region us-central1
+          gcloud config set artifacts/location us-central1
+
+      - name: Build and push Docker image
+        run: |
+          gcloud builds submit --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy top-games-api \
+            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --set-env-vars STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}
