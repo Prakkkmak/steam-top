@@ -129,13 +129,14 @@ func getTopGamesRealTime(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Println("Missing port")
+		log.Println("Variable PORT manquante, utilisation du port 8080 par défaut.")
 		port = "8080"
+	} else {
+		log.Printf("Variable PORT détectée : %s", port)
 	}
 	http.HandleFunc("/top5", getTopGamesRealTime)
-	fmt.Println("Serveur démarré sur le port ", port)
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		return
+	log.Printf("Serveur démarré sur le port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("Erreur au démarrage du serveur : %v", err)
 	}
 }
