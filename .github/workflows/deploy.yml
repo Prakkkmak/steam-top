@@ -26,7 +26,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_TAG=$(git rev-parse --short HEAD)
-          gcloud builds submit --suppress-log --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG
+          gcloud builds submit --suppress-logs --tag gcr.io/${{ vars.GCP_PROJECT_ID }}/top-games-api:$IMAGE_TAG
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Deploy to Cloud Run
