@@ -65,6 +65,10 @@ func getCurrentPlayers(appID int, apiKey string) int {
 
 func getTopGamesRealTime(w http.ResponseWriter, r *http.Request) {
 	apiKey := os.Getenv("STEAM_API_KEY")
+	if apiKey == "" {
+		log.Fatal("La clé API Steam n'est pas définie.")
+	}
+	log.Printf("Clé API Steam détectée : %s", apiKey)
 
 	// Récupérer les jeux les plus joués
 	url := fmt.Sprintf("https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/?key=%s", apiKey)
