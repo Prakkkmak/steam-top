@@ -127,7 +127,15 @@ func getTopGamesRealTime(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Println("Missing port")
+		port = "8080"
+	}
 	http.HandleFunc("/top5", getTopGamesRealTime)
-	fmt.Println("Serveur démarré sur le port 8090...")
-	log.Fatal(http.ListenAndServe("0.0.0.0:8090", nil))
+	fmt.Println("Serveur démarré sur le port ", port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		return
+	}
 }
